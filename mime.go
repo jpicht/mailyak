@@ -156,8 +156,9 @@ func (m *MailYak) writeBody(w io.Writer, boundary string) error {
 		_, err = part.Write(buf.Bytes())
 	}
 
-	writePart("text/plain", m.plain.Bytes())
-	writePart("text/html", m.html.Bytes())
+	for _, p := range m.bodyParts {
+		writePart(p.MimeType, p.Bytes())
+	}
 
 	return err
 }

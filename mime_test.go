@@ -261,8 +261,8 @@ func TestMailYakWriteBody(t *testing.T) {
 			t.Parallel()
 
 			m := MailYak{}
-			m.HTML().WriteString(tt.rHTML)
 			m.Plain().WriteString(tt.rPlain)
+			m.HTML().WriteString(tt.rHTML)
 
 			w := &bytes.Buffer{}
 			if err := m.writeBody(w, tt.boundary); (err != nil) != tt.wantErr {

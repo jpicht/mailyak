@@ -14,8 +14,8 @@ import (
 
 // MailYak represents an email.
 type MailYak struct {
-	html  BodyPart
-	plain BodyPart
+	html  *BodyPart
+	plain *BodyPart
 
 	toAddrs        []string
 	ccAddrs        []string
@@ -31,6 +31,7 @@ type MailYak struct {
 	host           string
 	writeBccHeader bool
 	date           string
+	bodyParts []*BodyPart
 }
 
 // New returns an instance of MailYak using host as the SMTP server, and
@@ -95,6 +96,8 @@ func (m *MailYak) String() string {
 	var (
 		att    []string
 		custom string
+		plain int
+		html int
 	)
 	for _, a := range m.attachments {
 		att = append(att, "{filename: "+a.filename+"}")
@@ -107,14 +110,24 @@ func (m *MailYak) String() string {
 		}
 		custom = strings.Join(hdrs, ", ") + ", "
 	}
+	if m.plain == nil {
+		plain = 0
+	}  else {
+		plain = len(m.plain.String())
+	}
+	if m.html == nil {
+		html = 0
+	}  else {
+		html = len(m.html.String())
+	}
 	return fmt.Sprintf(
 		"&MailYak{date: %q, from: %q, fromName: %q, html: %v bytes, plain: %v bytes, toAddrs: %v, "+
 			"bccAddrs: %v, subject: %q, %vhost: %q, attachments (%v): %v, auth set: %v}",
 		m.date,
 		m.fromAddr,
 		m.fromName,
-		len(m.HTML().String()),
-		len(m.Plain().String()),
+		html,
+		plain,
 		m.toAddrs,
 		m.bccAddrs,
 		m.subject,
@@ -128,10 +141,22 @@ func (m *MailYak) String() string {
 
 // HTML returns a BodyPart for the HTML email body.
 func (m *MailYak) HTML() *BodyPart {
-	return &m.html
+	if m.html == nil {
+		m.html = &BodyPart{
+			MimeType: "text/html",
+		}
+		m.bodyParts = append(m.bodyParts, m.html)
+	}
+	return m.html
 }
 
 // Plain returns a BodyPart for the plain-text email body.
 func (m *MailYak) Plain() *BodyPart {
-	return &m.plain
+	if m.plain == nil {
+		m.plain = &BodyPart{
+			MimeType: "text/plain",
+		}
+		m.bodyParts = append(m.bodyParts, m.plain)
+	}
+	return m.plain
 }
