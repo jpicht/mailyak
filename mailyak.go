@@ -160,3 +160,8 @@ func (m *MailYak) Plain() *BodyPart {
 	}
 	return m.plain
 }
+
+// AddBodyPart adds an additional body part
+func (m*MailYak) AddBodyPart(part *BodyPart) {
+	m.bodyParts = append(m.bodyParts, part)
+}

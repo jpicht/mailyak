@@ -613,3 +613,23 @@ func TestMailYakBuildMime_withAttachments(t *testing.T) {
 		})
 	}
 }
+
+// TestAddBodyPartBuildMime tests adding custom body parts
+func TestAddBodyPartBuildMime(t *testing.T) {
+	m := New("", nil)
+	m.date = `Fri, 13 Sep 2019 15:49:52 +0200`
+	content := bytes.Buffer{}
+	content.Write([]byte("text content"))
+	m.AddBodyPart(&BodyPart{
+		Buffer:   content,
+		MimeType: "random/part",
+	})
+	b, err := m.buildMimeWithBoundaries("mixed", "alt")
+	if err != nil {
+		t.Error(err)
+	}
+	const expected = "From: \r\nMime-Version: 1.0\r\nDate: Fri, 13 Sep 2019 15:49:52 +0200\r\nSubject: \r\nContent-Type: multipart/mixed;\r\n\tboundary=\"mixed\"; charset=UTF-8\r\n\r\n--mixed\r\nContent-Type: multipart/alternative;\r\n\tboundary=\"alt\"\r\n\r\n--alt\r\nContent-Transfer-Encoding: quoted-printable\r\nContent-Type: random/part; charset=UTF-8\r\n\r\ntext content\r\n--alt--\r\n\r\n--mixed--\r\n"
+	if b.String() != expected {
+		t.Errorf(":(")
+	}
+}
